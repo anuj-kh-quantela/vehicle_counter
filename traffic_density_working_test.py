@@ -9,8 +9,8 @@ import matplotlib
 
 matplotlib.style.use('ggplot')
 
-from custom_roi import draw_custom_roi
-
+os.sys.path.append('roi-code/custom_roi/')
+import draw_custom_roi
 
 def order_points(pts):
     """
@@ -37,6 +37,7 @@ def order_points(pts):
 
     # return the ordered coordinates
     return rect
+
 
 
 def four_point_transform(image, pts):
@@ -77,7 +78,6 @@ def four_point_transform(image, pts):
 
     # return the warped image
     return warped
-
 
 
 def select_roi(frame):
@@ -163,13 +163,15 @@ def running_median(array,q=50,n=5):
     l = len(array)
     return [np.percentile(array[i:i+n],50) for i in range(0,l)]
 
-def num_vehicle(video_channel ,roi=None, plot_intermediate = False, minm_area = None,dump_path=None):
+def num_vehicle(video_channel ,roi=None, plot_intermediate = False, minm_area = None,dump_path=None,remove_shadow=False):
     """
     video_channel : video name or path of video or camera number
     roi : top-left, top-right, bottom-right, bottom-left
     plot_intermediate : plot intermediate plots
     min_area : minimum area that will be used to query
-    dump_path : dumping path for 
+    dump_path : dumping path for congestion and number of vehicles
+    remove_shadow : contours will  have no shadow
+    
     """
     
     if plot_intermediate:
@@ -183,8 +185,8 @@ def num_vehicle(video_channel ,roi=None, plot_intermediate = False, minm_area = 
 
 
     #fgbg_mog = cv2.bgsegm.createBackgroundSubtractorMOG(128)
-    fgbg_mog2 = cv2.createBackgroundSubtractorMOG2(128,cv2.THRESH_BINARY,1)
-    fgbg_gmg = cv2.bgsegm.createBackgroundSubtractorGMG(128, cv2.THRESH_BINARY)
+    fgbg_mog2 = cv2.createBackgroundSubtractorMOG2(10,cv2.THRESH_BINARY,1)
+    fgbg_gmg = cv2.bgsegm.createBackgroundSubtractorGMG(10, cv2.THRESH_BINARY)
     #blob_det = cv2.SimpleBlobDetector_create()
     #fgbg=cv2.createBackgroundSubtractorKNN(128,cv2.THRESH_BINARY,1)
 
@@ -213,6 +215,10 @@ def num_vehicle(video_channel ,roi=None, plot_intermediate = False, minm_area = 
     
     text = 'select minimum area object \n skip frame : press s\nconfirmation : press c'
     label = None
+    if minm_area is not None:
+        min_area_obj_type = str(raw_input("minimum object type? \nbike/car"))
+
+        
     while True:
         try:
             time_1 = datetime.datetime.now()
@@ -224,6 +230,9 @@ def num_vehicle(video_channel ,roi=None, plot_intermediate = False, minm_area = 
             #print(cv2.THRESH_BINARY)
 
             warped_im = four_point_transform(frame,pts)
+            
+                
+                
             while minm_area is None:
                 cv2.namedWindow('select_min_area',cv2.WINDOW_NORMAL)
                 for idx,i in enumerate(text.split('\n')):
@@ -243,10 +252,11 @@ def num_vehicle(video_channel ,roi=None, plot_intermediate = False, minm_area = 
                     min_area_obj_type = str(raw_input("minimum object type? \nbike/car"))
                     minm_area = bbox1[2]*bbox1[3]
                     cv2.destroyWindow('select_min_area')
-                    print("minimum area selected = "+str(minm_area))
+                    #print("minimum area selected = "+str(minm_area))
 
 
             ret,frame = cap.read()
+            #print(str(cap.get(1))+" warping frame")
             warped_im = four_point_transform(frame,pts)
             if warped_im_area is  None:
                 warped_im_area = warped_im.shape[0]*warped_im.shape[1]
@@ -257,7 +267,8 @@ def num_vehicle(video_channel ,roi=None, plot_intermediate = False, minm_area = 
 
             #combining mmog2 and gmg
             fgmask = fgbg_mog2.apply((warped_im))
-            fgmask[fgmask == 127] = 0
+            if remove_shadow:
+                fgmask[fgmask == 127] = 0
             fgmask_gmg = fgbg_gmg.apply((warped_im))
 
             fgmask=cv2.bitwise_and(fgmask,fgmask_gmg)
@@ -271,11 +282,15 @@ def num_vehicle(video_channel ,roi=None, plot_intermediate = False, minm_area = 
             opening = cv2.morphologyEx(fgmask1,cv2.MORPH_CROSS,kernel,1)
             # sure background area
             sure_bg = cv2.dilate(opening,kernel,iterations=4)
+            #cv2.imshow('sure_background',sure_bg)
+            #cv2.waitKey(0)
 
             im2,contours,hierarchy =cv2.findContours(opening,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
             if len(contours)>0:
+                #print(str(cap.get(1))+" calculating contour area")
                 areas=np.array(list(map(cv2.contourArea,contours)))
                 args=np.argwhere(np.array(areas)>minm_area).flatten()
+                #print(str(cap.get(1)), args)
                 if len(args)>0:
                     #There are multiple frames in  each second...thus each vehicle can be detected twice
                     #hist=np.histogram(areas[args]/warped_im_area,bins=np.array(range(0,100,2),dtype=np.float32)/100)
@@ -295,13 +310,14 @@ def num_vehicle(video_channel ,roi=None, plot_intermediate = False, minm_area = 
                         plt.subplot(122)
                         #op=plt.hist(areas[args]/warped_im_area)
                         if  min_area_obj_type == 'car':
-
-                            hist_1 = plt.hist(areas[args],                                            bins=[0,2*minm_area,4*minm_area,6*minm_area,10*minm_area])[0].tolist()
+                            hist_1 = plt.hist(areas[args],\
+                                            bins=[0,2*minm_area,4*minm_area,6*minm_area,10*minm_area])[0].tolist()
                             plt.xticks([0,1*minm_area,3*minm_area,5*minm_area,8*minm_area],['','car','minibus','bus','heavy_duty'])
                             plt.show()
                         if min_area_obj_type == 'bike':
 
-                            hist_1 = plt.hist(areas[args],                                            bins=[0,2*minm_area,4*minm_area,6*minm_area,8*minm_area,10*minm_area])[0].tolist()
+                            hist_1 = plt.hist(areas[args],\
+                                            bins=[0,2*minm_area,4*minm_area,6*minm_area,8*minm_area,10*minm_area])[0].tolist()
 
                             plt.xticks([0,1*minm_area,3*minm_area,5*minm_area,7*minm_area,9*minm_area],['','bike','car','minibus','bus','heavy_duty'])
                             plt.show()
@@ -327,9 +343,11 @@ def num_vehicle(video_channel ,roi=None, plot_intermediate = False, minm_area = 
                    # blob_im=mask_to_objects(fgmask,.5,warped_im)
                 # dumping files
                     if dump_path is not None:
-                        #print(minm_area ,area_dist,congestion)
-                        veh_cnt = pd.DataFrame([[cap.get(1),str(time_1)] + hist_1],columns = ['frame_number','timestamp']+label)
-                        congestion_df =  pd.DataFrame([[cap.get(1),str(time_1) , areas[args].sum()/warped_im_area]],columns=['frame_number','timestamp','congestion'])
+                        #print(cap.get(1),minm_area ,area_dist,congestion)
+                        if not os.path.isdir(dump_path):
+                            os.makedirs(dump_path)
+                        veh_cnt = pd.DataFrame([[str(time_1)] + hist_1],columns = ['timestamp']+label)
+                        congestion_df =  pd.DataFrame([[str(time_1) , areas[args].sum()/warped_im_area]],columns=['timestamp','congestion'])
                         if not os.path.isfile(dump_path+'vehicle_count.csv'):
                             veh_cnt.to_csv(dump_path+'/vehicle_count.csv',mode='a+',index=False)
                             congestion_df.to_csv(dump_path+'/congestion.csv',mode = 'a+',index=False)
@@ -343,7 +361,7 @@ def num_vehicle(video_channel ,roi=None, plot_intermediate = False, minm_area = 
                     cv2.imshow('non_moving_background',fgbg_mog2.getBackgroundImage())
                     cv2.imshow('warped_im',warped_im)
                     cv2.imshow('detected_rectangle',fgmask_rect)
-                    cv2.imshow('noise_removal',opening)
+                    cv2.imshow('noise_removal',fgmask)
                     #cv2.imshow('background_difference',diff_image)
                     k = cv2.waitKey(30) & 0xff
                     if k == 27:
@@ -357,14 +375,6 @@ def num_vehicle(video_channel ,roi=None, plot_intermediate = False, minm_area = 
     cv2.destroyAllWindows()
 
 
-
-# plot_intermediate=False
-# video_channel = 'akashwani.mp4'
-# #roi= np.array(((210,140),(450,140),(540,300),(0,300)),dtype = np.float32)
-# dump_path = 'sample/'
-# minm_area = None
-
-# num_vehicle(video_channel,dump_path=dump_path)
 
 plot_intermediate=True
 video_channel = 'akashwani.mp4'
