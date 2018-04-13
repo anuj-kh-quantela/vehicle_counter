@@ -438,7 +438,7 @@ class VehicleCounter(object):
 
 
 # plot_intermediate=True
-# video_channel = 'Benzcircle-1.avi'
+# video_channel = 'Fortune-Murali-Right.avi'
 # roi= np.array([(620, 150), (892, 228), (681, 623), (27, 471)],dtype = np.float32)
 # dump_path = 'sample/'
 # minm_area = 6825
@@ -447,9 +447,29 @@ class VehicleCounter(object):
 # vo = VehicleCounter()
 # vo.num_vehicle(video_channel,dump_path=dump_path,minm_area=minm_area,roi=roi,plot_intermediate=False)
 
-# vo = VehicleCounter('akashwani.mp4', 'hyderabad', 'akashwani_west')
 # vo.num_vehicle(video_channel,dump_path=dump_path,minm_area=minm_area,roi=roi,plot_intermediate=False)
-# vo.num_vehicle(video_channel,minm_area=minm_area,roi=roi,plot_intermediate=False)
 # vo.num_vehicle(video_channel, plot_intermediate=False)
 
 
+# benz circle
+# video_channel = 'Benzcircle-1.avi'
+# vo = VehicleCounter('Benzcircle-1.avi', 'hyderabad', 'Benzcircle-1')
+# minm_area = 42008
+# roi = np.array([(367, 302), (1157, 304), (1895, 834), (419, 1030)], dtype=np.float32)
+# vo.num_vehicle(video_channel,minm_area=minm_area,roi=roi,plot_intermediate=False)
+
+
+
+
+# video_channel = 'Deputy-01.avi'
+# vo = VehicleCounter('Deputy-01.avi', 'hyderabad', 'Deputy-01')
+# minm_area = 28851
+# roi = np.array([(620, 552), (1174, 563), (1142, 1022), (65, 777)], dtype=np.float32)
+# vo.num_vehicle(video_channel,minm_area=minm_area,roi=roi,plot_intermediate=False)
+
+
+# video_channel = 'Deputy-01.avi'
+# vo = VehicleCounter('Deputy-01.avi', 'hyderabad', 'Deputy-01')
+# minm_area = 28851
+# roi = np.array([(620, 552), (1174, 563), (1142, 1022), (65, 777)], dtype=np.float32)
+# vo.num_vehicle(video_channel,minm_area=minm_area,roi=roi,plot_intermediate=False)
