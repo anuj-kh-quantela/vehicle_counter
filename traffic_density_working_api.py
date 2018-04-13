@@ -14,7 +14,39 @@ import draw_custom_roi
 
 class VehicleCounter(object):
 
-	def __init__(self):
+	def __init__(self, video_path, city_name, location_name = " "):
+
+		# 1. Define complete directory structure
+		# clean city name given by user
+		self.__city_name = city_name.strip().lower().replace(" ", "_")
+		# clean location name given by user
+		self.__location_name = location_name.strip().lower().replace(" ", "_")
+		# get absolute path to project directory
+		self.__dir_hierarchy = os.getcwd()
+		# extract project path and project name from absolute path
+		self.__project_path, self.__project_name = os.path.split(self.__dir_hierarchy)
+		
+		# list of all the predefined directories to be made 
+		predef_dir_structure_list = ['input', 'output', 'log', 'config']
+		# define root path for the above directory structure
+		predef_dir_structure_path = os.path.join(self.__project_path, self.__city_name, self.__location_name, self.__project_name)
+		
+		# make all the directories on the defined root path
+		for folder in predef_dir_structure_list:		
+			dir_structure = os.path.join(predef_dir_structure_path, folder)
+
+			if not os.path.exists(dir_structure):
+				os.makedirs(dir_structure)
+
+
+		self.__user_output_path = os.path.join(predef_dir_structure_path, 'output')
+
+		self.__path_to_output = self.__user_output_path
+		
+		# create output directory if doesn't exists already
+		if not os.path.exists(self.__path_to_output):
+			os.makedirs(self.__path_to_output)
+
 		print("Done Init!")
 
 	def order_points(self, pts):
@@ -178,6 +210,8 @@ class VehicleCounter(object):
 	    remove_shadow : contours will  have no shadow
 	    
 	    """
+
+
 	    
 	    if plot_intermediate:
 	        cv2.namedWindow('actual',cv2.WINDOW_NORMAL)
@@ -360,6 +394,27 @@ class VehicleCounter(object):
 	                            veh_cnt.to_csv(dump_path+'/vehicle_count.csv',mode='a+',index=False, header = False)
 	                            congestion_df.to_csv(dump_path+'/congestion.csv',mode = 'a+',index=False,header = False)
 
+	                    else:
+	                    	print('came here!')
+	                    	dump_path = self.__path_to_output
+	                    	print dump_path
+	                    	print(os.path.join(dump_path, 'vehicle_count.csv'))
+							#print(cap.get(1),minm_area ,area_dist,congestion)
+	                        if not os.path.isdir(dump_path):
+	                            os.makedirs(dump_path)
+	                        veh_cnt = pd.DataFrame([[str(time_1)] + hist_1],columns = ['timestamp']+label)
+	                        congestion_df =  pd.DataFrame([[str(time_1) , areas[args].sum()/warped_im_area]],columns=['timestamp','congestion'])
+	                        
+	                        if not os.path.isfile(os.path.join(dump_path, 'vehicle_count.csv')):
+	                            veh_cnt.to_csv(os.path.join(dump_path, 'vehicle_count.csv'), mode='a+',index=False)
+	                            congestion_df.to_csv(os.path.join(dump_path, 'vehicle_count.csv'), mode = 'a+',index=False)
+	                        else :
+								print("NOT COMING HERE?")
+								veh_cnt.to_csv(os.path.join(dump_path, 'vehicle_count.csv'), mode='a+',index=False, header = False)
+								congestion_df.to_csv(os.path.join(dump_path, 'vehicle_count.csv'), mode = 'a+',index=False,header = False)	                    	
+
+
+
 	                if plot_intermediate:
 	                    cv2.imshow('sure_background',sure_bg)
 	                    cv2.imshow('actual', frame)    
@@ -381,6 +436,16 @@ class VehicleCounter(object):
 
 
 
+# plot_intermediate=True
+# video_channel = 'akashwani.mp4'
+# roi= np.array([(620, 150), (892, 228), (681, 623), (27, 471)],dtype = np.float32)
+# dump_path = 'sample/'
+# minm_area = 6825
+
+
+# vo = VehicleCounter()
+# vo.num_vehicle(video_channel,dump_path=dump_path,minm_area=minm_area,roi=roi,plot_intermediate=False)
+
 plot_intermediate=True
 video_channel = 'akashwani.mp4'
 roi= np.array([(620, 150), (892, 228), (681, 623), (27, 471)],dtype = np.float32)
@@ -388,5 +453,8 @@ dump_path = 'sample/'
 minm_area = 6825
 
 
-vo = VehicleCounter()
-vo.num_vehicle(video_channel,dump_path=dump_path,minm_area=minm_area,roi=roi,plot_intermediate=False)
+vo = VehicleCounter('akashwani.mp4', 'hyderabad', 'akashwani_east')
+# vo.num_vehicle(video_channel,dump_path=dump_path,minm_area=minm_area,roi=roi,plot_intermediate=False)
+vo.num_vehicle(video_channel,minm_area=minm_area,roi=roi,plot_intermediate=False)
+
+
