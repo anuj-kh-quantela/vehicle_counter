@@ -395,24 +395,24 @@ class VehicleCounter(object):
 	                            congestion_df.to_csv(dump_path+'/congestion.csv',mode = 'a+',index=False,header = False)
 
 	                    else:
-	                    	print('came here!')
-	                    	dump_path = self.__path_to_output
-	                    	print dump_path
-	                    	print(os.path.join(dump_path, 'vehicle_count.csv'))
-							#print(cap.get(1),minm_area ,area_dist,congestion)
+
+	                    	#print(cap.get(1),minm_area ,area_dist,congestion)
+
+	                    	dump_path = self.__path_to_output + '/'
 	                        if not os.path.isdir(dump_path):
 	                            os.makedirs(dump_path)
 	                        veh_cnt = pd.DataFrame([[str(time_1)] + hist_1],columns = ['timestamp']+label)
 	                        congestion_df =  pd.DataFrame([[str(time_1) , areas[args].sum()/warped_im_area]],columns=['timestamp','congestion'])
-	                        
-	                        if not os.path.isfile(os.path.join(dump_path, 'vehicle_count.csv')):
-	                            veh_cnt.to_csv(os.path.join(dump_path, 'vehicle_count.csv'), mode='a+',index=False)
-	                            congestion_df.to_csv(os.path.join(dump_path, 'vehicle_count.csv'), mode = 'a+',index=False)
+	                        # vehicle_count_data = { 'timestamp' :  str(time_1), 'congestion' : areas[args].sum()/warped_im_area }
+	                        # print(vehicle_count_data)
+	                        if not os.path.isfile(dump_path+'vehicle_count.csv'):
+	                            veh_cnt.to_csv(dump_path+'/vehicle_count.csv',mode='a+',index=False)
+	                            congestion_df.to_csv(dump_path+'/congestion.csv',mode = 'a+',index=False)
 	                        else :
-								print("NOT COMING HERE?")
-								veh_cnt.to_csv(os.path.join(dump_path, 'vehicle_count.csv'), mode='a+',index=False, header = False)
-								congestion_df.to_csv(os.path.join(dump_path, 'vehicle_count.csv'), mode = 'a+',index=False,header = False)	                    	
+	                            veh_cnt.to_csv(dump_path+'/vehicle_count.csv',mode='a+',index=False, header = False)
+	                            congestion_df.to_csv(dump_path+'/congestion.csv',mode = 'a+',index=False,header = False)	                    	
 
+	                        dump_path = None
 
 
 	                if plot_intermediate:
@@ -453,7 +453,7 @@ dump_path = 'sample/'
 minm_area = 6825
 
 
-vo = VehicleCounter('akashwani.mp4', 'hyderabad', 'akashwani_east')
+vo = VehicleCounter('akashwani.mp4', 'hyderabad', 'akashwani_west')
 # vo.num_vehicle(video_channel,dump_path=dump_path,minm_area=minm_area,roi=roi,plot_intermediate=False)
 vo.num_vehicle(video_channel,minm_area=minm_area,roi=roi,plot_intermediate=False)
 
