@@ -255,7 +255,8 @@ class VehicleCounter(object):
 	    text = 'select minimum area object \n skip frame : press s\nconfirmation : press c'
 	    label = None
 	    if minm_area is not None:
-	        min_area_obj_type = str(raw_input("minimum object type? \nbike/car"))
+	        # min_area_obj_type = str(raw_input("minimum object type? \nbike/car"))
+	        min_area_obj_type = "bike"
 
 	        
 	    while True:
@@ -291,7 +292,7 @@ class VehicleCounter(object):
 	                    min_area_obj_type = str(raw_input("minimum object type? \nbike/car"))
 	                    minm_area = bbox1[2]*bbox1[3]
 	                    cv2.destroyWindow('select_min_area')
-	                    #print("minimum area selected = "+str(minm_area))
+	                    print("minimum area selected = "+str(minm_area))
 
 
 	            ret,frame = cap.read()
@@ -437,7 +438,7 @@ class VehicleCounter(object):
 
 
 # plot_intermediate=True
-# video_channel = 'akashwani.mp4'
+# video_channel = 'Benzcircle-1.avi'
 # roi= np.array([(620, 150), (892, 228), (681, 623), (27, 471)],dtype = np.float32)
 # dump_path = 'sample/'
 # minm_area = 6825
@@ -446,15 +447,9 @@ class VehicleCounter(object):
 # vo = VehicleCounter()
 # vo.num_vehicle(video_channel,dump_path=dump_path,minm_area=minm_area,roi=roi,plot_intermediate=False)
 
-plot_intermediate=True
-video_channel = 'akashwani.mp4'
-roi= np.array([(620, 150), (892, 228), (681, 623), (27, 471)],dtype = np.float32)
-dump_path = 'sample/'
-minm_area = 6825
-
-
-vo = VehicleCounter('akashwani.mp4', 'hyderabad', 'akashwani_west')
+# vo = VehicleCounter('akashwani.mp4', 'hyderabad', 'akashwani_west')
 # vo.num_vehicle(video_channel,dump_path=dump_path,minm_area=minm_area,roi=roi,plot_intermediate=False)
-vo.num_vehicle(video_channel,minm_area=minm_area,roi=roi,plot_intermediate=False)
+# vo.num_vehicle(video_channel,minm_area=minm_area,roi=roi,plot_intermediate=False)
+# vo.num_vehicle(video_channel, plot_intermediate=False)
 
 
