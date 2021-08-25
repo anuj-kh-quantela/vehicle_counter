@@ -84,7 +84,7 @@ Sphinx==1.7.2
 sphinxcontrib-websupport==1.0.1
 subprocess32==3.2.7
 sympy==1.1.1
-tensorflow-gpu==1.2.0
+tensorflow-gpu==2.5.1
 terminado==0.8.1
 testpath==0.3.1
 tmdbsimple==2.1.0
